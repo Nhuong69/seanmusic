@@ -1,52 +1,40 @@
 name: Deploy Website
 
 on:
-push:
-branches:
-- main
-paths-ignore:
-- README.md
-- .gitignore
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - .gitignore
 
 jobs:
-deploy:
-runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-```
-steps:
-  - name: Checkout Source
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
 
-  - name: Install lftp
-    run: |
-      sudo apt-get update
-      sudo apt-get install -y lftp
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
 
-  - name: Deploy via FTPS
-    env:
-      FTP_SERVER: onehost-wphn112403.000nethost.com
-      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-    run: |
-      lftp -e "
-      set ftp:ssl-force true;
-      set ftp:ssl-protect-data true;
-      set ssl:verify-certificate false;
-      set net:max-retries 2;
-      set net:timeout 20;
+      - name: Deploy via FTPS
+        env:
+          FTP_SERVER: onehost-wphn112403.000nethost.com
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          lftp -e "
+          set ftp:ssl-force true;
+          set ftp:ssl-protect-data true;
+          set ssl:verify-certificate false;
+          set net:max-retries 2;
+          set net:timeout 20;
+          open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER;
+          mirror -R --delete --parallel=8 --exclude-glob .git* --exclude .github --exclude .vscode --exclude node_modules --exclude README.md ./ /public_html/;
+          quit
+          "
 
-      open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER;
-
-      mirror -R \
-        --delete \
-        --parallel=8 \
-        --exclude-glob .git* \
-        --exclude .github \
-        --exclude .vscode \
-        --exclude node_modules \
-        --exclude README.md \
-        ./ /public_html/;
-
-      quit
-      "
-```
