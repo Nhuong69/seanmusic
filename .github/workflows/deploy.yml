@@ -33,8 +33,16 @@ jobs:
           set ssl:verify-certificate false;
           set net:max-retries 2;
           set net:timeout 20;
+          set cmd:fail-exit no;
           open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER;
-          mirror -R --delete --parallel=8 --exclude-glob .git* --exclude-glob .ftpquota* --exclude .github --exclude .vscode --exclude node_modules --exclude README.md ./ /public_html/;
+          mirror -R --delete --parallel=8 \
+            --exclude-glob ".git*" \
+            --exclude-glob ".ftpquota" \
+            --exclude-glob ".ftpquota*" \
+            --exclude ".github" \
+            --exclude ".vscode" \
+            --exclude node_modules \
+            --exclude README.md ./ /public_html/;
           quit
           "
 
